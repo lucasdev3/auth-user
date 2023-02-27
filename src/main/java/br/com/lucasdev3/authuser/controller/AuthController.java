@@ -1,11 +1,13 @@
 package br.com.lucasdev3.authuser.controller;
 
 import br.com.lucasdev3.authuser.entities.User;
+import br.com.lucasdev3.authuser.exceptions.UserNotFoundException;
 import br.com.lucasdev3.authuser.models.LoginModel;
 import br.com.lucasdev3.authuser.models.RegisterModel;
 import br.com.lucasdev3.authuser.service.AuthenticationService;
 import br.com.lucasdev3.authuser.service.TokenService;
 import java.util.Arrays;
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +44,11 @@ public class AuthController {
     Authentication authenticate = this.authenticationManager.authenticate(
         usernamePasswordAuthenticationToken);
     User user = (User) authenticate.getPrincipal();
-    return new ResponseEntity<>(Arrays.asList(tokenService.generateToken(user), user), HttpStatus.OK);
+    if(Objects.nonNull(user)) {
+      return new ResponseEntity<>(Arrays.asList(tokenService.generateToken(user), user),
+          HttpStatus.OK);
+    }
+    throw new UserNotFoundException("Usuario não encontrado ou senha inválida!");
   }
 
   @PostMapping("/register")

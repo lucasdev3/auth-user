@@ -3,6 +3,7 @@ package br.com.lucasdev3.authuser.service;
 import br.com.lucasdev3.authuser.entities.User;
 import br.com.lucasdev3.authuser.models.RegisterModel;
 import br.com.lucasdev3.authuser.repositories.UserRepository;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -16,6 +17,7 @@ public class AuthenticationService implements UserDetailsService {
   @Autowired
   private UserRepository userRepository;
 
+  private static final Logger logger = Logger.getLogger(AuthenticationService.class);
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -23,15 +25,12 @@ public class AuthenticationService implements UserDetailsService {
   }
 
   public void register(RegisterModel registerModel) {
-    try {
-      if (!userRepository.existsByUsername(registerModel.username())) {
-        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
-        User user = new User(registerModel.username(),
-            bCryptPasswordEncoder.encode(registerModel.password()));
-        userRepository.save(user);
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
+    UserDetails userDetails = loadUserByUsername(registerModel.username());
+    if (userDetails != null) {
+      BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+      User user = new User(registerModel.username(),
+          bCryptPasswordEncoder.encode(registerModel.password()));
+      userRepository.save(user);
     }
   }
 
