@@ -1,6 +1,5 @@
 package br.com.lucasdev3.authuser.entities;
 
-import br.com.lucasdev3.authuser.models.RegisterModel;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

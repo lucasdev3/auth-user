@@ -19,7 +19,7 @@ public class TokenService {
         .sign(Algorithm.HMAC256("secreta"));
   }
 
-  public String getSubject (String token) {
+  public String getSubject(String token) {
     return JWT.require(Algorithm.HMAC256("secreta"))
         .withIssuer("Products")
         .build().verify(token).getSubject();

@@ -1,7 +1,6 @@
 package br.com.lucasdev3.authuser.config;
 
 import br.com.lucasdev3.authuser.entities.User;
-import br.com.lucasdev3.authuser.exceptions.UserNotFoundException;
 import br.com.lucasdev3.authuser.repositories.UserRepository;
 import br.com.lucasdev3.authuser.service.TokenService;
 import jakarta.servlet.FilterChain;
@@ -34,7 +33,7 @@ public class FilterToken extends OncePerRequestFilter {
       token = authorizationHeader.replace("Bearer", "").trim();
       String subject = this.tokenService.getSubject(token);
       User user = this.userRepository.findByUsername(subject).orElse(null);
-      if(user != null) {
+      if (user != null) {
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
             user, null, user.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);

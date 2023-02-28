@@ -1,6 +1,8 @@
 package br.com.lucasdev3.authuser.service;
 
 import br.com.lucasdev3.authuser.entities.User;
+import br.com.lucasdev3.authuser.exceptions.UserAlreadyExistException;
+import br.com.lucasdev3.authuser.exceptions.UserNotFoundException;
 import br.com.lucasdev3.authuser.models.RegisterModel;
 import br.com.lucasdev3.authuser.repositories.UserRepository;
 import org.apache.log4j.Logger;
@@ -21,16 +23,24 @@ public class AuthenticationService implements UserDetailsService {
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    return userRepository.findByUsername(username).orElse(null);
+    User user = userRepository.findByUsername(username).orElse(null);
+    if (user == null) {
+      logger.info("Nenhum usuario encontrado!");
+      throw new UserNotFoundException("Nenhum usuario encontrado!");
+    }
+    return user;
   }
 
   public void register(RegisterModel registerModel) {
-    UserDetails userDetails = loadUserByUsername(registerModel.username());
-    if (userDetails != null) {
+    Boolean userFound = userRepository.existsByUsername(registerModel.username());
+    if (!userFound) {
       BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
       User user = new User(registerModel.username(),
           bCryptPasswordEncoder.encode(registerModel.password()));
       userRepository.save(user);
+      logger.info("Usuario cadastrado com sucesso!");
+    } else {
+      throw new UserAlreadyExistException("Usuario já cadastrado!");
     }
   }
 

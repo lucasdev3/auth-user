@@ -1,13 +1,12 @@
 package br.com.lucasdev3.authuser.controller;
 
 import br.com.lucasdev3.authuser.entities.User;
-import br.com.lucasdev3.authuser.exceptions.UserNotFoundException;
 import br.com.lucasdev3.authuser.models.LoginModel;
 import br.com.lucasdev3.authuser.models.RegisterModel;
 import br.com.lucasdev3.authuser.service.AuthenticationService;
 import br.com.lucasdev3.authuser.service.TokenService;
 import java.util.Arrays;
-import java.util.Objects;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +29,8 @@ public class AuthController {
   @Autowired
   private final AuthenticationService authenticationService;
 
+  private static final Logger logger = Logger.getLogger(AuthController.class);
+
   public AuthController(AuthenticationManager authenticationManager, TokenService tokenService,
       AuthenticationService authenticationService) {
     this.authenticationManager = authenticationManager;
@@ -44,22 +45,14 @@ public class AuthController {
     Authentication authenticate = this.authenticationManager.authenticate(
         usernamePasswordAuthenticationToken);
     User user = (User) authenticate.getPrincipal();
-    if(Objects.nonNull(user)) {
-      return new ResponseEntity<>(Arrays.asList(tokenService.generateToken(user), user),
-          HttpStatus.OK);
-    }
-    throw new UserNotFoundException("Usuario não encontrado ou senha inválida!");
+    return new ResponseEntity<>(Arrays.asList(tokenService.generateToken(user), user),
+        HttpStatus.OK);
   }
 
   @PostMapping("/register")
   public ResponseEntity<?> register(@RequestBody RegisterModel registerModel) {
-    try {
-      authenticationService.register(registerModel);
-      return ResponseEntity.ok().build();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return new ResponseEntity<>("Falha ao cadastrar usuario!", HttpStatus.BAD_REQUEST);
+    authenticationService.register(registerModel);
+    return ResponseEntity.ok().build();
   }
 
 }
