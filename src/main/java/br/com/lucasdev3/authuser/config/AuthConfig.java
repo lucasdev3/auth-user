@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -16,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+//@EnableGlobalMethodSecurity(jsr250Enabled = true)
 public class AuthConfig {
 
   @Autowired
@@ -26,9 +28,10 @@ public class AuthConfig {
     return http.csrf().disable()
         .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         .and().authorizeHttpRequests()
-        .requestMatchers(HttpMethod.GET, "/home").permitAll()
-        .requestMatchers(HttpMethod.POST, "/login").permitAll()
-        .requestMatchers(HttpMethod.POST, "/register").permitAll()
+        .antMatchers(HttpMethod.GET, "/home").permitAll()
+        .antMatchers(HttpMethod.POST, "/login").permitAll()
+        .antMatchers(HttpMethod.POST, "/register").permitAll()
+        .antMatchers(HttpMethod.GET, "/products").hasAnyRole("USER")
         .anyRequest().authenticated()
         .and().addFilterBefore(filterToken, UsernamePasswordAuthenticationFilter.class)
         .build();

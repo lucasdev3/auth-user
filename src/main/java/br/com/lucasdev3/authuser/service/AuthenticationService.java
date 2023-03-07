@@ -8,13 +8,14 @@ import br.com.lucasdev3.authuser.repositories.UserRepository;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsPasswordService;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AuthenticationService implements UserDetailsService {
+public class AuthenticationService implements UserDetailsService, UserDetailsPasswordService {
 
   @Autowired
   private UserRepository userRepository;
@@ -23,12 +24,10 @@ public class AuthenticationService implements UserDetailsService {
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    User user = userRepository.findByUsername(username).orElse(null);
-    if (user == null) {
+    return userRepository.findByUsername(username).orElseThrow(() -> {
       logger.info("Nenhum usuario encontrado!");
       throw new UserNotFoundException("Nenhum usuario encontrado!");
-    }
-    return user;
+    });
   }
 
   public void register(RegisterModel registerModel) {
@@ -37,11 +36,17 @@ public class AuthenticationService implements UserDetailsService {
       BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
       User user = new User(registerModel.username(),
           bCryptPasswordEncoder.encode(registerModel.password()));
+      user.setAuthorities("ROLE_USER");
       userRepository.save(user);
       logger.info("Usuario cadastrado com sucesso!");
     } else {
       throw new UserAlreadyExistException("Usuario já cadastrado!");
     }
+  }
+
+  @Override
+  public UserDetails updatePassword(UserDetails user, String newPassword) {
+    return null;
   }
 
 }

@@ -1,15 +1,18 @@
 package br.com.lucasdev3.authuser.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import lombok.NoArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
@@ -25,6 +28,8 @@ public class User implements UserDetails {
 
   private String password;
 
+  private String role;
+
   public User(String username, String passwordEncoded) {
     this.username = username;
     this.password = passwordEncoded;
@@ -36,7 +41,24 @@ public class User implements UserDetails {
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
-    return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+    return List.of(new SimpleGrantedAuthority(this.role));
+  }
+
+  public void setAuthorities(String role) {
+    this.role = role;
+    Collection<SimpleGrantedAuthority> oldAuthorities = (Collection<SimpleGrantedAuthority>) SecurityContextHolder.getContext()
+        .getAuthentication().getAuthorities();
+    SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role);
+    List<SimpleGrantedAuthority> updatedAuthorities = new ArrayList<SimpleGrantedAuthority>();
+    updatedAuthorities.add(authority);
+    updatedAuthorities.addAll(oldAuthorities);
+
+    SecurityContextHolder.getContext().setAuthentication(
+        new UsernamePasswordAuthenticationToken(
+            SecurityContextHolder.getContext().getAuthentication().getPrincipal(),
+            SecurityContextHolder.getContext().getAuthentication().getCredentials(),
+            updatedAuthorities)
+    );
   }
 
   @Override
